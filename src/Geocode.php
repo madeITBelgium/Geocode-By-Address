@@ -68,8 +68,7 @@ class Geocode
     {
         if (in_array($type, ['geocode.xyz', 'google'])) {
             $this->type = $type;
-        }
-        else {
+        } else {
             throw new \Exception('Wrong GEO Data type. Take one of: geocode.xyz, google');
         }
     }
