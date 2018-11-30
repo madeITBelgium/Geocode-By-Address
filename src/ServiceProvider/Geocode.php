@@ -37,7 +37,7 @@ class Geocode extends ServiceProvider
     public function register()
     {
         $this->app->singleton('geocode', function ($app) {
-            $config = $app->make('config')->get('addressGeodata');
+            $config = $app->make('config')->get('geocode');
 
             return new \MadeITBelgium\Geocode\Geocode($config['type'], $config['key'], $config['client']);
         });
