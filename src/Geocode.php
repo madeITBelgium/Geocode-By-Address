@@ -2,7 +2,6 @@
 
 namespace MadeITBelgium\Geocode;
 
-use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -20,7 +19,7 @@ use GuzzleHttp\Exception\ServerException;
 class Geocode
 {
     protected $version = '1.0.0';
-    private $type = "geocode.xyz";
+    private $type = 'geocode.xyz';
     private $key = null;
 
     private $client;
@@ -32,7 +31,7 @@ class Geocode
      * @param $clientSecret;
      * @param $client
      */
-    public function __construct($type = "geocode.xyz", $key = null, $client = null)
+    public function __construct($type = 'geocode.xyz', $key = null, $client = null)
     {
         $this->setType($type);
 
@@ -67,9 +66,10 @@ class Geocode
 
     public function setType($type)
     {
-        if(in_array($type, ['geocode.xyz', 'google'])) {
+        if (in_array($type, ['geocode.xyz', 'google'])) {
             $this->type = $type;
         }
+
         throw new \Exception('Wrong GEO Data type. Take one of: geocode.xyz, google');
     }
 
@@ -110,7 +110,7 @@ class Geocode
 
     public function lookup($address)
     {
-        if($this->type === "geocode.xyz") {
+        if ($this->type === 'geocode.xyz') {
             return $this->lookupGeocodeXYZ($address);
         }
 
@@ -119,42 +119,43 @@ class Geocode
 
     private function lookupGeocodeXYZ($address)
     {
-        $url = "https://geocode.xyz/" . urlencode($address) . "?json=1";
-        if($this->key !== null) {
-            $url .= "&key=" . $this->key;
+        $url = 'https://geocode.xyz/'.urlencode($address).'?json=1';
+        if ($this->key !== null) {
+            $url .= '&key='.$this->key;
         }
-        
+
         $result = $this->getCall($url);
         $respons = json_decode($result, true);
-        if(isset($respons["longt"])) {
+        if (isset($respons['longt'])) {
             return [
-                $respons["latt"],
-                $respons["longt"]
+                $respons['latt'],
+                $respons['longt'],
             ];
         }
+
         return false;
     }
 
     private function lookupGoogle($address)
     {
-        $url = "https://maps.googleapis.com/maps/api/geocode/json?sensor=false&address=";
+        $url = 'https://maps.googleapis.com/maps/api/geocode/json?sensor=false&address=';
         $url .= urlencode($address);
-        if($this->key !== null) {
-            $url .= "&key=" . $this->key;
+        if ($this->key !== null) {
+            $url .= '&key='.$this->key;
         }
 
         $result = $this->getCall($url);
         $respons = json_decode($result, true);
-        if(isset($respons["results"][0])) {
-            $results = $respons["results"][0];
-            if(isset($results["geometry"]["location"]["lat"])) {
+        if (isset($respons['results'][0])) {
+            $results = $respons['results'][0];
+            if (isset($results['geometry']['location']['lat'])) {
                 return [
-                    $results["geometry"]["location"]["lat"],
-                    $results["geometry"]["location"]["lng"]
+                    $results['geometry']['location']['lat'],
+                    $results['geometry']['location']['lng'],
                 ];
             }
         }
-        
+
         return false;
-    } 
+    }
 }
