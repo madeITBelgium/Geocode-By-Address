@@ -34,7 +34,7 @@ You can use the facade for shorter code. Add this to your aliases:
 Publish the configuration
 
 ```php
-'Geocode' => MadeITBelgium\Geocode\Facade\Geocode::class,
+php artisan vendor:publish --provider="MadeITBelgium\Geocode\ServiceProvider\Geocode"
 ```
 
 # Documentation
