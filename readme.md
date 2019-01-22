@@ -60,10 +60,22 @@ if($geodata !== false) {
 }
 ```
 
+Or you can use structured data structuredLookup($streetName, $streetNumber, $municipality, $postalCode, $country)
+```php
+use MadeITBelgium\Geocode\Facade\Geocode;
+$geodata = Geocode::structuredLookup('Nieuwstraat', '1', 'Brussel', '1000', 'Belgium');
+if($geodata !== false) {
+    $latitude = $geodata[0];
+    $longitude = $geodata[1];
+}
+```
+
 ## Supported types
 Currently supported GEO data providers:
 Google: 'google'
 Geocode.xyz: 'geocode.xyz'
+TomTom: 'tomtom' Atention! when using structuredLookup you need to provide 2 or 3 letter country code!
+
 
 The complete documentation can be found at: [http://www.madeit.be/](http://www.madeit.be/)
 
