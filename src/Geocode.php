@@ -48,7 +48,7 @@ class Geocode
             'timeout' => 10.0,
             'headers' => [
                 'User-Agent' => 'Made I.T. PHP SDK V'.$this->version,
-                'Accept' => 'application/json',
+                'Accept'     => 'application/json',
             ],
             'verify' => true,
         ]);
@@ -117,6 +117,7 @@ class Geocode
         } elseif ($this->type === 'google') {
             return $this->lookupGoogle($streetName.' '.$streetNumber.', '.$postalCode.' '.$municipality.', '.$country);
         }
+
         throw new Exception($this->type.' do not support structured lookup');
     }
 
@@ -129,6 +130,7 @@ class Geocode
         } elseif ($this->type === 'tomtom') {
             return $this->lookupTomTom($address);
         }
+
         throw new Exception($this->type.' do not support normal lookup');
     }
 
