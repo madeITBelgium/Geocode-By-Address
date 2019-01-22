@@ -18,8 +18,8 @@ use GuzzleHttp\Exception\ServerException;
  */
 class Geocode
 {
-    protected $version = '1.0.0';
-    private $type = 'geocode.xyz';
+    protected $version = '1.1.0';
+    private $type = '';
     private $key = null;
 
     private $client;
@@ -45,10 +45,10 @@ class Geocode
     private function createClient()
     {
         $this->client = new Client([
-            'timeout'  => 10.0,
-            'headers'  => [
+            'timeout' => 10.0,
+            'headers' => [
                 'User-Agent' => 'Made I.T. PHP SDK V'.$this->version,
-                'Accept'     => 'application/json',
+                'Accept' => 'application/json',
             ],
             'verify' => true,
         ]);
@@ -66,10 +66,10 @@ class Geocode
 
     public function setType($type)
     {
-        if (in_array($type, ['geocode.xyz', 'google'])) {
+        if (in_array($type, ['geocode.xyz', 'google', 'tomtom'])) {
             $this->type = $type;
         } else {
-            throw new \Exception('Wrong GEO Data type. Take one of: geocode.xyz, google');
+            throw new \Exception('Wrong GEO Data type. Take one of: geocode.xyz, google, tomtom');
         }
     }
 
@@ -108,13 +108,28 @@ class Geocode
         return $this->call('GET', $endPoint);
     }
 
+    public function structuredLookup($streetName, $streetNumber, $municipality, $postalCode, $country)
+    {
+        if ($this->type === 'tomtom') {
+            return $this->structuredLookupTomTom($streetName, $streetNumber, $municipality, $postalCode, $country);
+        } elseif ($this->type === 'geocode.xyz') {
+            return $this->lookupGeocodeXYZ($streetName.' '.$streetNumber.', '.$postalCode.' '.$municipality.', '.$country);
+        } elseif ($this->type === 'google') {
+            return $this->lookupGoogle($streetName.' '.$streetNumber.', '.$postalCode.' '.$municipality.', '.$country);
+        }
+        throw new Exception($this->type.' do not support structured lookup');
+    }
+
     public function lookup($address)
     {
         if ($this->type === 'geocode.xyz') {
             return $this->lookupGeocodeXYZ($address);
+        } elseif ($this->type === 'google') {
+            return $this->lookupGoogle($address);
+        } elseif ($this->type === 'tomtom') {
+            return $this->lookupTomTom($address);
         }
-
-        return $this->lookupGoogle($address);
+        throw new Exception($this->type.' do not support normal lookup');
     }
 
     private function lookupGeocodeXYZ($address)
@@ -152,6 +167,64 @@ class Geocode
                 return [
                     $results['geometry']['location']['lat'],
                     $results['geometry']['location']['lng'],
+                ];
+            }
+        }
+
+        return false;
+    }
+
+    private function lookupTomTom($address)
+    {
+        $url = 'https://api.tomtom.com/search/2/geocode/';
+        $url .= urlencode($address).'.json';
+        if ($this->key !== null) {
+            $url .= '?key='.$this->key;
+        }
+
+        $result = $this->getCall($url);
+        $respons = json_decode($result, true);
+        if (isset($respons['results'][0])) {
+            $results = $respons['results'][0];
+            if (isset($results['position']['lat'])) {
+                return [
+                    $results['position']['lat'],
+                    $results['position']['lng'],
+                ];
+            }
+        }
+
+        return false;
+    }
+
+    private function structuredLookupTomTom($streetName, $streetNumber, $municipality, $postalCode, $country)
+    {
+        $data = [];
+        if ($this->key !== null) {
+            $data['key'] = $this->key;
+        }
+
+        if (strlen($country) > 3) {
+            $data['countryCode'] = substr($country, 0, 2);
+        } else {
+            $data['countryCode'] = $country;
+        }
+
+        $data['streetNumber'] = $streetNumber;
+        $data['streetName'] = $streetName;
+        $data['municipality'] = $municipality;
+        $data['postalCode'] = $postalCode;
+
+        $url = 'https://api.tomtom.com/search/2/structuredGeocode.json?'.http_build_query($data);
+
+        $result = $this->getCall($url);
+        $respons = json_decode($result, true);
+        if (isset($respons['results'][0])) {
+            $results = $respons['results'][0];
+            if (isset($results['position']['lat'])) {
+                return [
+                    $results['position']['lat'],
+                    $results['position']['lng'],
                 ];
             }
         }
