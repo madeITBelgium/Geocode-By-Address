@@ -21,6 +21,6 @@ class GeocodeTest extends TestCase
             ],
             'verify' => true,
         ]);
-        $geocode = new Geocode($client);
+        $geocode = new Geocode('google', null, $client);
     }
 }
