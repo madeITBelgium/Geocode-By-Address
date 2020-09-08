@@ -237,17 +237,16 @@ class Geocode
 
         return false;
     }
-    
 
     private function lookupOpenstreetmap($address)
     {
         $qry = http_build_query([
-            'format' => 'jsonv2',
-            'q' => $address,
+            'format'         => 'jsonv2',
+            'q'              => $address,
             'addressdetails' => 1,
         ]);
-        $url = 'https://nominatim.openstreetmap.org/search?' . $qry;
-        
+        $url = 'https://nominatim.openstreetmap.org/search?'.$qry;
+
         $result = $this->getCall($url);
         $response = json_decode($result, true);
         if (isset($response[0]['lon']) && isset($response[0]['lat'])) {
