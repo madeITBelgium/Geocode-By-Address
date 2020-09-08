@@ -18,7 +18,7 @@ use GuzzleHttp\Exception\ServerException;
  */
 class Geocode
 {
-    protected $version = '1.1.0';
+    protected $version = '1.2.0';
     private $type = '';
     private $key = null;
 
@@ -47,7 +47,7 @@ class Geocode
         $this->client = new Client([
             'timeout' => 10.0,
             'headers' => [
-                'User-Agent' => 'Made I.T. PHP SDK V'.$this->version,
+                'User-Agent' => 'madeITBelgium/Geocode-By-Address PHP SDK V'.$this->version,
                 'Accept'     => 'application/json',
             ],
             'verify' => true,
@@ -66,10 +66,10 @@ class Geocode
 
     public function setType($type)
     {
-        if (in_array($type, ['geocode.xyz', 'google', 'tomtom'])) {
+        if (in_array($type, ['geocode.xyz', 'google', 'tomtom', 'openstreetmap'])) {
             $this->type = $type;
         } else {
-            throw new \Exception('Wrong GEO Data type. Take one of: geocode.xyz, google, tomtom');
+            throw new \Exception('Wrong GEO Data type. Take one of: geocode.xyz, google, tomtom, openstreetmap');
         }
     }
 
@@ -116,6 +116,8 @@ class Geocode
             return $this->lookupGeocodeXYZ($streetName.' '.$streetNumber.', '.$postalCode.' '.$municipality.', '.$country);
         } elseif ($this->type === 'google') {
             return $this->lookupGoogle($streetName.' '.$streetNumber.', '.$postalCode.' '.$municipality.', '.$country);
+        } elseif ($this->type === 'openstreetmap') {
+            return $this->lookupOpenstreetmap($streetName.' '.$streetNumber.', '.$postalCode.' '.$municipality.', '.$country);
         }
 
         throw new Exception($this->type.' do not support structured lookup');
@@ -129,6 +131,8 @@ class Geocode
             return $this->lookupGoogle($address);
         } elseif ($this->type === 'tomtom') {
             return $this->lookupTomTom($address);
+        } elseif ($this->type === 'openstreetmap') {
+            return $this->lookupOpenstreetmap($address);
         }
 
         throw new Exception($this->type.' do not support normal lookup');
@@ -229,6 +233,28 @@ class Geocode
                     $results['position']['lng'],
                 ];
             }
+        }
+
+        return false;
+    }
+    
+
+    private function lookupOpenstreetmap($address)
+    {
+        $qry = http_build_query([
+            'format' => 'jsonv2',
+            'q' => $address,
+            'addressdetails' => 1,
+        ]);
+        $url = 'https://nominatim.openstreetmap.org/search?' . $qry;
+        
+        $result = $this->getCall($url);
+        $response = json_decode($result, true);
+        if (isset($response[0]['lon']) && isset($response[0]['lat'])) {
+            return [
+                $response[0]['lat'],
+                $response[0]['lon'],
+            ];
         }
 
         return false;
